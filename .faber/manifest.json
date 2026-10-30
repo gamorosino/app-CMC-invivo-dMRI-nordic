@@ -1,0 +1,171 @@
+{
+  "name": "CMC invivo dMRI (NORDIC)",
+  "github": "gamorosino/app-CMC-invivo-dMRI-nordic",
+  "github_branch": "main",
+  "config": {
+    "ap_dwi":   { "type": "input", "file_id": "dwi",   "input_id": "ap_dwi" },
+    "ap_bvecs": { "type": "input", "file_id": "bvecs", "input_id": "ap_dwi" },
+    "ap_bvals": { "type": "input", "file_id": "bvals", "input_id": "ap_dwi" },
+    "pa_dwi":   { "type": "input", "file_id": "dwi",   "input_id": "pa_dwi" },
+    "pa_bvecs": { "type": "input", "file_id": "bvecs", "input_id": "pa_dwi" },
+    "pa_bvals": { "type": "input", "file_id": "bvals", "input_id": "pa_dwi" },
+    "ap_phase": { "type": "input", "file_id": "dwi",   "input_id": "ap_phase" },
+    "pa_phase": { "type": "input", "file_id": "dwi",   "input_id": "pa_phase" },
+    "t1":       { "type": "input", "file_id": "t1w",   "input_id": "t1" },
+
+    "total_readout_time": {
+      "id": "total_readout_time", "type": "number",
+      "desc": "Total EPI readout time in seconds (FSL convention).",
+      "default": 0.05, "advanced": false
+    },
+    "lower_b": {
+      "id": "lower_b", "type": "integer",
+      "desc": "b-value threshold separating the lower shell used for tensor fitting.",
+      "default": 1000, "advanced": false
+    },
+    "mode": {
+      "id": "mode", "type": "string",
+      "desc": "Pipeline mode: 'nhp' for non-human primate, 'human' for human.",
+      "default": "nhp", "advanced": false
+    },
+    "b0range": {
+      "id": "b0range", "type": "number",
+      "desc": "b-value ceiling for volumes treated as b0.",
+      "default": 60, "advanced": true
+    },
+    "phase_encoding_scheme": {
+      "id": "phase_encoding_scheme", "type": "string",
+      "desc": "Phase-encoding axis pair: 'AP_PA' or 'LR_RL'.",
+      "default": "AP_PA", "advanced": true
+    },
+    "combine_only_matched_pairs": {
+      "id": "combine_only_matched_pairs", "type": "boolean",
+      "desc": "Combine only AP/PA runs that are matched pairs.",
+      "default": false, "advanced": true
+    },
+    "ptx_steplength": {
+      "id": "ptx_steplength", "type": "number",
+      "desc": "Probabilistic tractography step length (mm).",
+      "default": 0.15, "advanced": true
+    },
+    "no_gpu": {
+      "id": "no_gpu", "type": "boolean",
+      "desc": "Disable GPU acceleration (e.g. for EDDY).",
+      "default": false, "advanced": true
+    },
+    "denoise": {
+      "id": "denoise", "type": "boolean",
+      "desc": "Enable denoising. NORDIC runs automatically when phase inputs are provided; MPPCA is used otherwise. Set false to skip denoising entirely.",
+      "default": true, "advanced": false
+    },
+    "run_gibbs": {
+      "id": "run_gibbs", "type": "boolean",
+      "desc": "Apply Gibbs ringing correction after denoising.",
+      "default": true, "advanced": true
+    },
+    "run_n4": {
+      "id": "run_n4", "type": "boolean",
+      "desc": "Apply N4 bias field correction.",
+      "default": true, "advanced": true
+    },
+    "run_tractography": {
+      "id": "run_tractography", "type": "boolean",
+      "desc": "Run BedpostX + XTRACT tractography after preprocessing.",
+      "default": true, "advanced": false
+    },
+    "stdreg_method": {
+      "id": "stdreg_method", "type": "string",
+      "desc": "Standard-space registration method: 'mmorf' or 'fnirt'.",
+      "default": "mmorf", "advanced": true
+    },
+    "eddy_extra_args": {
+      "id": "eddy_extra_args", "type": "string",
+      "desc": "Extra arguments passed verbatim to EDDY (optional).",
+      "default": "", "advanced": true
+    }
+  },
+  "inputs": [
+    {
+      "id": "ap_dwi",
+      "datatype": "neuro/dwi",
+      "datatype_tags": [],
+      "desc": "AP (or LR) phase-encoding direction diffusion MRI.",
+      "optional": false,
+      "multi": true,
+      "advanced": false
+    },
+    {
+      "id": "pa_dwi",
+      "datatype": "neuro/dwi",
+      "datatype_tags": [],
+      "desc": "PA (or RL) phase-encoding direction diffusion MRI.",
+      "optional": false,
+      "multi": true,
+      "advanced": false
+    },
+    {
+      "id": "ap_phase",
+      "datatype": "neuro/dwi",
+      "datatype_tags": ["phase"],
+      "desc": "AP phase images for NORDIC denoising. Must match ap_dwi count. Requires pa_phase.",
+      "optional": true,
+      "multi": true,
+      "advanced": false
+    },
+    {
+      "id": "pa_phase",
+      "datatype": "neuro/dwi",
+      "datatype_tags": ["phase"],
+      "desc": "PA phase images for NORDIC denoising. Must match pa_dwi count. Requires ap_phase.",
+      "optional": true,
+      "multi": true,
+      "advanced": false
+    },
+    {
+      "id": "t1",
+      "datatype": "neuro/anat/t1w",
+      "datatype_tags": [],
+      "desc": "T1w structural image for standard-space registration (optional).",
+      "optional": true,
+      "multi": false,
+      "advanced": false
+    }
+  ],
+  "outputs": [
+    {
+      "id": "tensor",
+      "datatype": "neuro/tensor",
+      "datatype_tags": [],
+      "desc": "DTI tensor-derived scalar maps (FA, MD, AD, RD) from the lower-shell tensor fit.",
+      "archive": true
+    },
+    {
+      "id": "brain_mask",
+      "datatype": "neuro/mask",
+      "datatype_tags": [],
+      "desc": "Final post-EDDY brain mask.",
+      "archive": true
+    },
+    {
+      "id": "qa_report",
+      "datatype": "report/pdf",
+      "datatype_tags": [],
+      "desc": "Multi-page QA report (EDDY QC, masks, tensor maps, registration, XTRACT summary).",
+      "archive": true
+    },
+    {
+      "id": "preproc_bundle",
+      "datatype": "raw",
+      "datatype_tags": [],
+      "desc": "Full preprocessing bundle: TOPUP/EDDY outputs, final 4D data, standard-space warps.",
+      "archive": true
+    },
+    {
+      "id": "tractography_bundle",
+      "datatype": "raw",
+      "datatype_tags": [],
+      "desc": "BedpostX + XTRACT outputs. Empty if run_tractography was disabled.",
+      "archive": true
+    }
+  ]
+}

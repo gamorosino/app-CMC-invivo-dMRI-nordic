@@ -1,0 +1,31 @@
+{
+  "__comment__ap_phase": "Optional. Provide AP phase DWI to enable NORDIC denoising (requires pa_phase too).",
+  "__comment__pa_phase": "Optional. Provide PA phase DWI to enable NORDIC denoising (requires ap_phase too).",
+
+  "ap_dwi": "ap_dwi/dwi.nii.gz",
+  "ap_bvecs": "ap_dwi/dwi.bvecs",
+  "ap_bvals": "ap_dwi/dwi.bvals",
+  "ap_phase": null,
+
+  "pa_dwi": "pa_dwi/dwi.nii.gz",
+  "pa_bvecs": "pa_dwi/dwi.bvecs",
+  "pa_bvals": "pa_dwi/dwi.bvals",
+  "pa_phase": null,
+
+  "t1": null,
+
+  "total_readout_time": 0.05,
+  "lower_b": 1000,
+  "mode": "nhp",
+  "b0range": 60,
+  "phase_encoding_scheme": "AP_PA",
+  "combine_only_matched_pairs": false,
+  "ptx_steplength": 0.15,
+  "no_gpu": false,
+  "denoise": true,
+  "run_gibbs": true,
+  "run_n4": true,
+  "run_tractography": true,
+  "stdreg_method": "mmorf",
+  "eddy_extra_args": null
+}
